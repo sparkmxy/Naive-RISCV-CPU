@@ -67,15 +67,10 @@ always @(*) begin
 				arithemicOut <= reg1_i - reg2_i;
 			end
 			`EXE_OP_SLT: begin  // signed comparison
-				if (reg1_i[31] == reg2_i[31]) begin
-					arithemicOut <= (reg1_i < reg2_i) ? 1'b1 : 1'b0;
-				end
-				else begin
-					arithemicOut <= (reg1_i[31] == 1'b1) ? 1'b1 : 1'b0;
-				end
+				arithemicOut <= ($signed(reg1_i) < $signed(reg2_i)) ? {{31{1'b0}},1'b1} : `ZeroWord;
 			end
 			`EXE_OP_SLTU: begin
-				arithemicOut <= (reg1_i < reg2_i) ? 1'b1 : 1'b0;
+				arithemicOut <= (reg1_i < reg2_i) ? {{31{1'b0}},1'b1} : `ZeroWord;
 			end
 			default:begin
 				arithemicOut <= `ZeroWord;
@@ -100,7 +95,7 @@ always @(*) begin
 				shiftResult <= reg1_i >> reg2_i[4:0];
 			end
 			`EXE_OP_SRA: begin  // Arithemic shift
-				shiftResult <= ({32{reg1_i[31]}} >> (6'd32 - {1'b0,reg2_i[4:0]}))|(reg1_i >> reg2_i[4:0]);
+				shiftResult <= ({32{reg1_i[31]}} << (6'd32 - {1'b0,reg2_i[4:0]}))|(reg1_i >> reg2_i[4:0]);
 			end
 			default:begin
 				shiftResult <= `ZeroWord;
@@ -119,7 +114,7 @@ always @(*) begin
 	else begin
 			case (aluop_i)
 			`EXE_OP_AUIPC: begin
-				PCrelatedValue <= $signed(reg1_i) + $signed(reg2_i) ;
+				PCrelatedValue <= reg1_i;
 			end
 			`EXE_OP_LUI: begin
 				PCrelatedValue <= reg1_i;

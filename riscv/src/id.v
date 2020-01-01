@@ -127,7 +127,6 @@ always @(*) begin
 					// Do AUIPC
 					aluop_o <= `EXE_OP_AUIPC;
 					alusel_o <= `OP_JAMP;
-					reg1_read_o <= `ReadEnable;
 					wreg_o <= `WriteEnable;
 					imm <= $signed(pc_i) + $signed({inst_i[31:12],{12{1'b0}}});
 				end
@@ -272,7 +271,7 @@ always @(*) begin
 						`FUNC3_SLTIU: begin
 							aluop_o <= `EXE_OP_SLTU;
 							alusel_o <= `OP_ARI;
-							imm <= {20'h0,inst_i[31:20]};
+							imm <= {{20{inst_i[31]}},inst_i[31:20]};
 						end	
 						`FUNC3_XORI: begin
 							aluop_o <= `EXE_OP_XOR;

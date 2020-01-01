@@ -53,6 +53,7 @@ always @(*) begin
 		end
 		else begin
 			address_o <= `ZeroWord;
+			RWflag <= 1'b0;
 		end
 	end
 end

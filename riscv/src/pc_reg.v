@@ -23,11 +23,13 @@ reg[`InstBus] inst;
 
 reg[2:0] state; 
 reg[`InstAddrBus] pc;
+reg[`RegBus] inst_cnt;
 
 always @(posedge clk) begin
 	if (rst == `RstEnable) begin
 		// reset
 		state <= 3'b000;
+		inst_cnt <= `ZeroWord;
 		ce <= `ChipDisable;
 	end
 	else begin
@@ -84,6 +86,7 @@ always @(posedge clk) begin
 					pc <= pc + 4;
 					state <= 3'b000;
 					inst_o <= {ram_data_i[7:0],inst[23:0]};
+					inst_cnt <= inst_cnt + 1;
 				end
 			endcase
 		end

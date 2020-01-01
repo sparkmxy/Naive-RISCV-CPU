@@ -61,11 +61,10 @@
 `define FUNC3_XORI			3'b100
 `define FUNC3_ORI			3'b110
 `define FUNC3_ANDI			3'b111
-
-
 `define FUNC3_SLLI			3'b001
 `define FUNC3_SRLI			3'b101
 `define FUNC3_SRAI			3'b101
+
 `define FUNC3_ADD			3'b000
 `define FUNC3_SUB			3'b000
 `define FUNC3_SLL			3'b001
@@ -82,7 +81,7 @@
 `define FUNC7_0				7'b0000000
 
 //AluOp
-`define AluOpBus			6:0
+`define AluOpBus			5:0
 `define EXE_OP_NOP			6'b000000
 `define EXE_OP_AUIPC		6'b000001
 `define EXE_OP_JAL			6'b000010

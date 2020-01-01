@@ -30,6 +30,7 @@ reg [`AluOpBus] this;
 reg [`RegBus] result;
 reg [`RegBus] content;
 reg [`RegBus] target_addr;
+reg [`RegAddrBus] delayed_waddr;
 
 assign zero32 = `ZeroWord;
 
@@ -38,6 +39,7 @@ always @(posedge clk) begin
 		this <= aluop_i;
 		content <= wData_i;
 		target_addr <= addr_i;
+		delayed_waddr <= wAddr_i;
 	end
 	if (rst == `RstEnable) begin
 		// reset
@@ -75,27 +77,27 @@ always @(posedge clk) begin
 						RWtype <= 2'b01;
 						ram_addr <= target_addr + 2;
 						stallFlag <= `LTrue;
-						result[31:24] <= ram_data_i[7:0];
+						result[7:0] <= ram_data_i[7:0];
 					end
 					3'b100: begin
 						RWtype <= 2'b01;
 						ram_addr <= target_addr + 3;
 						stallFlag <= `LTrue;
-						result[23:16] <= ram_data_i[7:0];
+						result[15:8] <= ram_data_i[7:0];
 					end
 					3'b101: begin
 						RWtype <= 2'b00;
 						stallFlag <= `LTrue;
-						result[15:8] <= ram_data_i[7:0];
+						result[23:16] <= ram_data_i[7:0];
 					end
 					3'b110: begin
 						RWtype <= 2'b00;
 						LS_done_flag <= 3'b000;
-						wAddr_o <= wAddr_i;
-						wreg_o <= wreg_i;
+						wAddr_o <= delayed_waddr;
+						wreg_o <= `WriteEnable;
 						stallFlag <= `LFalse;
 						this <= 6'b000000;
-						wData_o <= {result[31:8],ram_data_i[7:0]};
+						wData_o <= {ram_data_i[7:0],result[23:0]};
 					end
 				endcase
 			end
@@ -115,16 +117,16 @@ always @(posedge clk) begin
 					3'b011: begin
 						RWtype <= 2'b00;
 						stallFlag <= `LTrue;
-						result[15:8] <= ram_data_i[7:0];
+						result[7:0] <= ram_data_i[7:0];
 					end
 					3'b100: begin
 						RWtype <= 2'b00;
 						LS_done_flag <= 3'b000;
-						wAddr_o <= wAddr_i;
-						wreg_o <= wreg_i;
+						wAddr_o <= delayed_waddr;
+						wreg_o <= `WriteEnable;
 						stallFlag <= `LFalse;
 						this <= 6'b000000;
-						wData_o <= {{16{result[15]}},result[15:8],ram_data_i[7:0]};
+						wData_o <= {{16{ram_data_i[7]}},ram_data_i[7:0],result[7:0]};
 					end
 				endcase
 			end
@@ -145,8 +147,8 @@ always @(posedge clk) begin
 						RWtype <= 2'b00;
 						LS_done_flag <= 3'b000;
 						wData_o <= {{24{ram_data_i[7]}},ram_data_i[7:0]};
-						wAddr_o <= wAddr_i;
-						wreg_o <= wreg_i;
+						wAddr_o <= delayed_waddr;
+						wreg_o <= `WriteEnable;
 						this <= 6'b000000;
 						stallFlag <= `LFalse;
 					end
@@ -168,17 +170,16 @@ always @(posedge clk) begin
 					3'b011: begin
 						RWtype <= 2'b00;
 						stallFlag <= `LTrue;
-						result[15:8] <= ram_data_i[7:0];
+						result[7:0] <= ram_data_i[7:0];
 					end
 					3'b100: begin
 						RWtype <= 2'b00;
 						LS_done_flag <= 3'b000;
-						wData_o <= ram_data_i;
-						wAddr_o <= wAddr_i;
-						wreg_o <= wreg_i;
+						wAddr_o <= delayed_waddr;
+						wreg_o <= `WriteEnable;
 						stallFlag <= `LFalse;
 						this <= 6'b000000;
-						wData_o[15:8] <= {zero32[31:16],result[15:8],ram_data_i[7:0]};
+						wData_o <= {zero32[31:16],ram_data_i[7:0],result[7:0]};
 					end
 				endcase
 			end
@@ -186,12 +187,12 @@ always @(posedge clk) begin
 				LS_done_flag <= LS_done_flag + 1;
 				case (LS_done_flag)
 					3'b001: begin
-						RWtype <= 2'b10;
+						RWtype <= 2'b01;
 						ram_addr <= target_addr;
 						stallFlag <= `LTrue;
 					end
 					3'b010: begin
-						RWtype <= 2'b10;
+						RWtype <= 2'b00;
 						ram_addr <= `ZeroWord;
 						stallFlag <= `LTrue;
 					end
@@ -199,8 +200,8 @@ always @(posedge clk) begin
 						RWtype <= 2'b00;
 						LS_done_flag <= 3'b000;
 						wData_o <= {zero32[31:8],ram_data_i[7:0]};
-						wAddr_o <= wAddr_i;
-						wreg_o <= wreg_i;
+						wAddr_o <= delayed_waddr;
+						wreg_o <= `WriteEnable;
 						this <= 6'b000000;
 						stallFlag <= `LFalse;
 					end
@@ -238,12 +239,12 @@ always @(posedge clk) begin
 						RWtype <= 2'b10;
 						ram_addr <= target_addr;
 						stallFlag <= `LTrue;
-						ram_data_o <= content[15:8];
+						ram_data_o <= content[7:0];
 					end
 					3'b010: begin
 						RWtype <= 2'b10;
 						ram_addr <= target_addr + 1;
-						ram_data_o <= content[7:0];
+						ram_data_o <= content[15:8];
 						stallFlag <= `LTrue;
 					end
 					3'b011: begin
@@ -265,25 +266,25 @@ always @(posedge clk) begin
 						RWtype <= 2'b10;
 						ram_addr <= target_addr;
 						stallFlag <= `LTrue;
-						ram_data_o <= content[31:24];
+						ram_data_o <= content[7:0];
 					end
 					3'b010: begin
 						RWtype <= 2'b10;
 						ram_addr <= target_addr + 1;
 						stallFlag <= `LTrue;
-						ram_data_o <= content[23:16];
+						ram_data_o <= content[15:8];
 					end
 					3'b011: begin
 						RWtype <= 2'b10;
 						ram_addr <= target_addr + 2;
 						stallFlag <= `LTrue;
-						ram_data_o <= content[15:8];
+						ram_data_o <= content[23:16];
 					end
 					3'b100: begin
-						RWtype <= 2'b01;
+						RWtype <= 2'b10;
 						ram_addr <= target_addr + 3;
 						stallFlag <= `LTrue;
-						ram_data_o <= content[7:0];
+						ram_data_o <= content[31:24];
 					end
 					3'b101: begin
 						RWtype <= 2'b00;
@@ -292,6 +293,7 @@ always @(posedge clk) begin
 					3'b110: begin
 						RWtype <= 2'b00;
 						LS_done_flag <= 3'b000;
+						stallFlag <= `LFalse;
 						this <= 6'b000000;
 					end
 				endcase
