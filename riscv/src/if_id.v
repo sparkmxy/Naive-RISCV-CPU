@@ -26,6 +26,10 @@ always @(posedge clk) begin
 		id_pc <= if_pc;
 		id_inst <= if_inst;
 	end
+	else begin
+		id_pc <= `ZeroWord;
+		id_inst <= `ZeroWord;
+	end
 end
 
 endmodule

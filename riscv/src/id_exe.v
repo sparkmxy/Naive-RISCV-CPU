@@ -21,8 +21,6 @@ module id_exe(
 	output		reg[`RegAddrBus] 	exe_wAddr,
 	output		reg				    exe_wreg,
 	//branch related
-	input		wire 				isNextAborted_i,
-	output		reg 				isNextAborted_o,
 
 	// for load store
 	input		wire[`RegBus]		id_inst,
@@ -38,16 +36,14 @@ always @(posedge clk) begin
 		exe_reg2 <= `ZeroWord;
 		exe_wAddr <= `NOPRegAddr;
 		exe_wreg <= `WriteDisable;
-		isNextAborted_o <= 1'b0;
 	end
-	else if (stall[2] == `STOP && stall[3] == `STOP) begin
+	else if (stall[2] == `STOP && stall[3] == `NOSTOP) begin
 		exe_aluop <= `EXE_OP_NOP;
 		exe_alusel <= `OP_NOP;
 		exe_reg1 <= `ZeroWord;
 		exe_reg2 <= `ZeroWord;
 		exe_wAddr <= `NOPRegAddr;
 		exe_wreg <= `WriteDisable;
-		isNextAborted_o <= 1'b0;
 	end
 	else if(stall[2] == `NOSTOP) begin
 		exe_aluop <= id_aluop;
@@ -57,7 +53,14 @@ always @(posedge clk) begin
 		exe_wreg <= id_wreg;
 		exe_wAddr <= id_wAddr;
 		exe_inst <= id_inst;
-		isNextAborted_o <= isNextAborted_i;
+	end
+	else begin
+		exe_aluop <= `EXE_OP_NOP;
+		exe_alusel <= `OP_NOP;
+		exe_reg1 <= `ZeroWord;
+		exe_reg2 <= `ZeroWord;
+		exe_wAddr <= `NOPRegAddr;
+		exe_wreg <= `WriteDisable;
 	end
 end
 

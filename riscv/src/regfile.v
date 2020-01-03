@@ -19,11 +19,17 @@ module regfile(
 // Define 32 32-bit registers
 reg[`RegBus] regs[0:`RegNum-1];
 
+integer i;
 /*****************************Write Operations********************************/
 always @(posedge clk) begin
 	if (rst == `RstDisable) begin
 		if ((wEnable == `WriteEnable) && (wAddr != `RegNumLog2'h0)) begin
 			regs[wAddr] <= wData;
+		end
+	end
+	else begin
+		for(i = 0;i<32; i = i + 1) begin
+			regs[i] = `ZeroWord;
 		end
 	end
 end

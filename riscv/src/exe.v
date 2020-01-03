@@ -16,7 +16,10 @@ module exe(
 
 	//to MEM	
 	output		reg[`AluOpBus]		aluop_o,
-	output		reg[`RegBus]		mem_addr_o
+	output		reg[`RegBus]		mem_addr_o,
+
+	output 		reg 				stallFlag
+
 );
 
 // store the result of operation of different type
@@ -169,21 +172,27 @@ always @(*) begin
 	case (alusel_i)
 		`OP_LOGIC: begin
 			wData_o <= logicOut;
+			stallFlag <= `NOSTOP;
 		end
 		`OP_SHIFT: begin
 			wData_o <= shiftResult;
+			stallFlag <= `NOSTOP;
 		end
 		`OP_ARI: begin
 			wData_o <= arithemicOut;
+			stallFlag <= `NOSTOP;
 		end
 		`OP_JAMP: begin
 			wData_o <= PCrelatedValue;
+			stallFlag <= `NOSTOP;
 		end
 		`OP_LOAD_STORE: begin
 			wData_o <= 	StoreValue;
+			stallFlag <= `STOP;
 		end
 		default: begin
 			wData_o <= `ZeroWord;
+			stallFlag <= `NOSTOP;
 		end
 	endcase
 end

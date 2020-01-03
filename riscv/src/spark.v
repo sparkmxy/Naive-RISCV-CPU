@@ -13,7 +13,7 @@ module	spark(
 	
 	input 		wire 				stall_if_i
 );
-
+	
 	wire[`InstAddrBus]				branch_target;
 	wire							branch_flag;
 	wire[`InstBus]					if_inst_o;
@@ -62,6 +62,10 @@ module	spark(
 	wire[`RegBus]					mem_wData_o;
 	wire[1:0]						mem_RWtype;
 
+	wire[`RegAddrBus]				mem_wAddr2id;
+	wire							mem_wreg2id;
+	wire[`RegBus]					mem_wData2id;
+
 	//MEM/WB -> WB
 	wire[`RegAddrBus]				wb_wAddr_i;
 	wire							wb_wreg_i;
@@ -76,16 +80,18 @@ module	spark(
 	wire[`RegAddrBus]				reg2_addr;	
 
 	//Control
-	wire[5:0]						stallFlag_id;
-	wire[5:0]						stallFlag_mem;
-
+	wire							stallFlag_id;
+	wire							stallFlag_mem;
+	wire 							stallFlag_exe;
 	wire[5:0]						stall_o;
 
-	wire							isAborted;
-	wire							isNextAborted;
-	
-	// mem_control
-	
+	// cache 
+	wire 							cache_we;
+	wire 							if_req2cache;
+	wire[`InstBus]					if_inst2cache;
+	wire[`InstBus]					cache2if_inst;
+
+		
 	assign RWtype_o = mem_RWtype;
 	//Instantiation of pc_reg
 
@@ -97,7 +103,13 @@ module	spark(
 		.pcValid(pcValid_o),
 		.ram_data_i(ram_data_i),
 		.ram_addr_o(rom_addr_o),
-		.inst_o(if_inst_o)
+		.inst_o(if_inst_o),
+
+		// to/from cache
+		.req2cahce(if_req2cache),
+		.inst2cache(if_inst2cache),
+		.cache_we(cache_we),
+		.inst_from_cache(cache2if_inst)
 	);
 
 
@@ -129,13 +141,13 @@ module	spark(
 		// Data forwarding, from EXE and MEM
 		.exe_wreg_i(exe_wreg_o), .exe_wAddr_i(exe_wAddr_o),
 		.exe_wData_i(exe_wData_o),
+		.ex_mem_wreg_i(mem_wreg2id), .ex_mem_wAddr_i(mem_wAddr2id),
+		.ex_mem_wData_i(mem_wData2id),
 		.mem_wreg_i(mem_wreg_o), .mem_wAddr_i(mem_wAddr_o),
 		.mem_wData_i(mem_wData_o),
 
 		.stallFlag(stallFlag_id),
 
-		.aborted(isAborted),  
-		.isNextAborted(isNextAborted),
 		.branchFlag(branch_flag), 
 		.branchTarget(branch_target),
 
@@ -169,9 +181,6 @@ module	spark(
 		.exe_wAddr(exe_wAddr_i), .exe_wreg(exe_wreg_i),
 
 		.stall(stall_o),
-
-		.isNextAborted_i(isNextAborted), 
-		.isNextAborted_o(isAborted),
 		
 		.id_inst(id_inst_o), .exe_inst(exe_inst_i)
 	);
@@ -189,7 +198,9 @@ module	spark(
 
 		.inst_i(exe_inst_i), 
 		.aluop_o(exe_aluop_o),
-		.mem_addr_o(exe_addr_o)
+		.mem_addr_o(exe_addr_o),
+
+		.stallFlag(stallFlag_exe)
 	);
 
 
@@ -207,7 +218,11 @@ module	spark(
 
 		.stall(stall_o),
 		.mem_addr(mem_addr_i),
-		.exe_mem_addr(exe_addr_o)
+		.exe_mem_addr(exe_addr_o),
+
+		.wAddr2id(mem_wAddr2id),
+		.wData2id(mem_wData2id),
+		.wreg2id(mem_wreg2id)
 	);
 
 	//Instantiation of MEM
@@ -254,6 +269,16 @@ module	spark(
 		.stall_from_id(stallFlag_id),
 		.stall_from_mem(stallFlag_mem),
 		.stall_from_ram(stall_if_i),
+		.stall_from_exe(stallFlag_exe),
 		.stall(stall_o)
 	);
+
+	//Instantiation of I-cahce
+	Icache Icache0(
+		.rst(rst), .clk(clk),
+		.pcValid(if_req2cache), .we(cache_we),
+		.pc_address_i(pc),
+		.inst_i(if_inst2cache),
+		.inst_o(cache2if_inst)
+	); 
 endmodule

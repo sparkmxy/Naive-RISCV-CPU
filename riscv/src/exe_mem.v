@@ -18,7 +18,11 @@ module exe_mem(
 	output		reg[`RegBus]			mem_wData,
 
 	output		reg[`AluOpBus]			mem_aluop,
-	output		reg[`RegBus]			mem_addr
+	output		reg[`RegBus]			mem_addr,
+
+	output		reg[`RegAddrBus]	wAddr2id,
+	output		reg 				wreg2id,
+	output		reg[`RegBus]		wData2id
 );
 
 always @(posedge clk) begin
@@ -43,6 +47,16 @@ always @(posedge clk) begin
 		mem_wreg <= exe_wreg;
 		mem_aluop <=  exe_aluop;
 		mem_addr <= exe_mem_addr;
+		wreg2id <= exe_wreg;
+		wData2id <= exe_wData;
+		wAddr2id <= exe_wAddr;
+	end
+	else begin
+		mem_wreg <= `WriteDisable;
+		mem_wData <= `ZeroWord;
+		mem_wAddr <= `NOPRegAddr;
+		mem_aluop <= `ZeroWord;
+		mem_addr <= `ZeroWord;
 	end
 end
 

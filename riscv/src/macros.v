@@ -134,3 +134,8 @@
 `define RegNum				32
 `define RegNumLog2			5
 `define	NOPRegAddr			5'b00000
+
+/*******************Macro Definitions About Instruction Cache********************/
+`define NumOfLines			256
+`define TagLength			24
+`define IndexLength			8  //log(NumOfLines)		

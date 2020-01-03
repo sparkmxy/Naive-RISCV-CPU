@@ -34,6 +34,11 @@ always @(posedge clk) begin
 		wb_wData <= mem_wData;
 		wb_wAddr <= mem_wAddr;
 	end
+	else begin
+		wb_wAddr <= `NOPRegAddr;
+		wb_wreg <= `WriteDisable;
+		wb_wData <= `ZeroWord;
+	end
 end
 
 endmodule
