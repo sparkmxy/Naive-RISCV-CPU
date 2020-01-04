@@ -11,4 +11,4 @@ A load/store instruction takes more than one cycle during MEM stage, and **the p
 To deal with requests of stalling the pipeline from different stages, I designed a module named 'controller' to manage which stages should 
 stall. 
 
-As for branches, I employ the simpliest method of prediction, that is, the IF contiune to fetch the instruction at pc+4. In another words, the speculation is always 'not taken'. **The branch target and whether to take the branch is determined during ID stage**. If the branch is unfortunately taken, ID will send a signal to IF, making IF abondon the wrong instruction and set pc to the branch target.
+As for branches, I employ the simpliest method of prediction, that is, the IF contiune to fetch the instruction at pc+4. In other words, the speculation is always 'not taken'. **The branch target and whether to take the branch is determined during ID stage**. If the branch is unfortunately taken, ID will send a signal to IF, making IF abondon the wrong instruction and set pc to the branch target.
